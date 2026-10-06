@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { IconArchive, IconArrowBackUp, IconFileAlert, IconFileCheck, IconRefresh, IconCheck, IconDeviceFloppy, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconDownload, IconPresentation, IconSelector, IconSettings, IconX } from '@tabler/icons-react'
+import { IconArchive, IconArrowBackUp, IconFileAlert, IconFileCheck, IconRefresh, IconCheck, IconDeviceFloppy, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconDownload, IconPresentation, IconLayoutBoard, IconSelector, IconSettings, IconX } from '@tabler/icons-react'
 import FormatBar, { TextColorsContext } from './FormatBar'
 import { EngineContext, FormatContext, LANDSCAPE, LayoutsContext, PageContext, ScaleContext, TEXT, type Cards, type Saved, type SheetCards, type TextEdit, type Texts } from './Sheet'
 import type { DocConfig, PresentationConfig, PresentationData } from './config'
@@ -480,7 +480,8 @@ export function PresentationApp({ config, theme, data: initial }: { config: Pres
         <aside className={sideOpen ? 'sidebar' : 'sidebar is-closed'} aria-label="Pagine">
           <div className="sidebar-top">
             <a className="sidebar-brand" href="#top" aria-label={config.title}>
-              <img src={theme.logo} alt="" />
+              {/* the editor wears the engine's mark; the published site the presentation's logo */}
+              {EDITOR ? <span className="engine-mark"><IconLayoutBoard size={18} stroke={2} />sheets</span> : <img src={theme.logo} alt="" />}
               {!EDITOR && <span>{doc.name}</span>}
             </a>
             <button type="button" className="icon-btn" title={sideOpen ? 'Chiudi la barra' : 'Apri la barra'} aria-label={sideOpen ? 'Chiudi la barra' : 'Apri la barra'} onClick={toggleSide}>
