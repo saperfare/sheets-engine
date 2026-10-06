@@ -1,0 +1,58 @@
+{
+  "name": "@saperfare/sheets-engine",
+  "version": "0.1.0",
+  "description": "White-label editor and presenter for A4 and 16:9 sheets: grid cards, inline text, gallery, video, locks, PDF via headless Edge.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./engine.css": "./dist/engine.css",
+    "./vite": {
+      "types": "./vite/plugin.d.ts",
+      "default": "./vite/plugin.js"
+    },
+    "./middleware": {
+      "types": "./middleware.d.ts",
+      "default": "./middleware.js"
+    },
+    "./theme.schema.json": "./theme.schema.json"
+  },
+  "bin": {
+    "sheets-engine": "./bin/sheets-engine.js"
+  },
+  "files": [
+    "dist",
+    "vite",
+    "middleware.js",
+    "middleware.d.ts",
+    "bin",
+    "theme.schema.json"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json && cp src/engine.css src/grain.png dist/"
+  },
+  "dependencies": {
+    "@tabler/icons-react": "^3.48.0",
+    "react-grid-layout": "^2.2.4"
+  },
+  "peerDependencies": {
+    "@vercel/functions": "^3.9.11",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "peerDependenciesMeta": {
+    "@vercel/functions": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "~5.9.3"
+  }
+}

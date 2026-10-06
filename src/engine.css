@@ -1,0 +1,619 @@
+/* sheets-engine: the editor and the sheet chrome. Colours and fonts come from the presentation theme
+   (theme.json -> CSS variables on :root, see theme.ts); the content's own CSS is loaded after this file. */
+:root { --radius: 0.75rem; }
+* { margin: 0;
+  padding: 0;
+  box-sizing: border-box; }
+body { font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-page);
+  min-height: 100vh; }
+.cell { background: white;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.875rem;
+  overflow: hidden;
+  position: relative;
+  border-radius: 0.75rem; }
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+/* Reset all grid positions for tablet layout */
+.cell[style*="gridColumn"] { grid-column: auto !important;
+    grid-row: auto !important; }
+/* Logo full width on tablet */
+.cell[style*="gridColumn: '1 / 3'"] { grid-column: 1 / -1 !important;
+    grid-row: auto !important; }
+/* Palette full width */
+.cell[style*="gridColumn: '3 / 5'"] { grid-column: 1 / -1 !important;
+    grid-row: auto !important; }
+}
+@media screen and (max-width: 768px) {
+/* Logo cell at top, full width */
+.cell[style*="gridColumn: '1 / 3'"] { grid-column: 1 / -1 !important;
+    grid-row: auto !important; }
+/* Palette cell - spans full width */
+.cell[style*="gridColumn: '3 / 5'"] { grid-column: 1 / -1 !important;
+    grid-row: auto !important; }
+/* Type cells - col 1 (Display font) */
+.cell[style*="gridColumn: '1'"][style*="gridRow: '3'"] { grid-column: 1 !important;
+    grid-row: auto !important; }
+/* Type cells - col 2 (Heading font) */
+.cell[style*="gridColumn: '2'"][style*="gridRow: '3'"] { grid-column: 2 !important;
+    grid-row: auto !important; }
+/* Type cells - col 3 (Body font - Noto Sans) */
+.cell[style*="gridColumn: '3'"][style*="gridRow: '3'"]:not([style*="gridRow: '3'"][style*="gridColumn: '3'"][style*="gridRow: '2'"]) { grid-column: 1 / -1 !important;
+    grid-row: auto !important; }
+/* Orange accents - col 5 row 1 */
+.cell[style*="gridColumn: '5'"][style*="gridRow: '1'"] { grid-column: 1 !important;
+    grid-row: auto !important; }
+/* Usage cells - various positions */
+.cell[style*="gridColumn: '3'"][style*="gridRow: '2'"], .cell[style*="gridColumn: '3'"][style*="gridRow: '3'"], .cell[style*="gridColumn: '4'"][style*="gridRow: '2'"], .cell[style*="gridColumn: '4'"][style*="gridRow: '3'"], .cell[style*="gridColumn: '5'"][style*="gridRow: '2'"], .cell[style*="gridColumn: '5'"][style*="gridRow: '3'"] { grid-column: auto !important;
+    grid-row: auto !important; }
+.cell { padding: 1.25rem; }
+}
+@media screen and (max-width: 480px) {
+/* All cells stack in single column */
+.cell[style*="gridColumn"] { grid-column: 1 !important;
+    grid-row: auto !important; }
+.cell { padding: 1rem;
+    border-radius: 0.5rem; }
+}
+@page { size: A4 landscape; margin: 0; }
+.chip { display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: white;
+  color: var(--color-ink);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0.375rem 0 0.75rem; }
+/* Artistic project sheets */
+.sheets { display: flex; flex-direction: column; align-items: center; gap: calc(2rem + 20px); padding: 2rem 0; }
+.sheet { position: relative;
+  width: 100rem;
+  height: 70.71rem;
+  background: white;
+  overflow: hidden; }
+.react-grid-item > .cell { width: 100%; height: 100%; }
+.react-grid-item { cursor: grab; }
+.react-grid-item.react-draggable-dragging { cursor: grabbing; z-index: 20; }
+.react-grid-item:hover { outline: 2px solid color-mix(in srgb, var(--color-accent) 55%, transparent); outline-offset: 2px; border-radius: 0.75rem; }
+.react-grid-placeholder { background: var(--color-accent) !important; border-radius: 0.75rem; }
+.sheet-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem; }
+.sheet-tools button { font: 600 0.75rem var(--font-title);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: white;
+  color: var(--color-strong);
+  cursor: pointer; }
+.sheet-tools button:hover { background: var(--color-accent-lt); }
+::selection { background: var(--color-accent-lt); color: var(--color-strong-dk); }
+[contenteditable='true'] { caret-color: var(--color-accent-dk); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 999px; border: 2px solid var(--color-page); }
+::-webkit-scrollbar-track { background: var(--color-page); }
+.cell-text { background: var(--color-paper); }
+.cell-text .chip { margin-top: 0; }
+.cell-img { padding: 0; }
+.cell-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cell-text p { font-size: 1.0625rem; line-height: 1.6; color: color-mix(in srgb, var(--color-ink) 78%, transparent); }
+.cell-text p + p { margin-top: 0.875rem; }
+.cell-text b { font-weight: 600; color: var(--color-ink); }
+.index { list-style: none; counter-reset: n; display: flex; flex-direction: column; gap: 0.875rem; }
+.index li { counter-increment: n; display: grid; grid-template-columns: 2.25rem 1fr; font-size: 1.0625rem; line-height: 1.5; color: color-mix(in srgb, var(--color-ink) 78%, transparent); }
+.index li::before { content: counter(n, decimal-leading-zero); font-family: var(--font-title); font-weight: 600; color: var(--color-accent); }
+.tool-img { flex: 1; min-height: 0; }
+.tool-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Toolbar, presentation, toast */
+.toolbar { position: fixed;
+  bottom: 0.625rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: 0.375rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-paper) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-strong-dk) 14%, transparent);
+  font-family: var(--font-title); }
+.toolbar button, .present-bar button { font: 600 0.875rem var(--font-title);
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  background: white;
+  color: var(--color-strong);
+  cursor: pointer;
+  transition: background 0.15s; }
+.toolbar button:hover { background: var(--color-accent-lt); }
+.toolbar button.primary { background: var(--color-strong); border-color: var(--color-strong); color: white; }
+.toolbar button.primary:hover { background: var(--color-strong-lt); }
+.toolbar button:disabled { opacity: 0.6; cursor: progress; }
+.sheets.present { position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #141017;
+  cursor: pointer; }
+.sheets.present .page { display: none; }
+.sheets.present .page.current { display: block; }
+.sheets.present .sheet-tools { display: none; }
+.sheets.present .sheet { zoom: var(--fit); border-radius: 0; }
+.sheets.present .react-grid-item { cursor: pointer; }
+.sheets.present .react-grid-item:hover { outline: none; }
+.sheets.present .react-resizable-handle { display: none; }
+.present-bar { position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font: 600 0.875rem var(--font-title);
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0.25;
+  transition: opacity 0.2s; }
+.present-bar:hover { opacity: 1; }
+.present-bar button:hover { background: var(--color-accent-lt); }
+.toast { position: fixed;
+  left: 50%;
+  bottom: 9rem;
+  transform: translateX(-50%);
+  z-index: 70;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  background: var(--color-strong);
+  color: white;
+  font: 500 0.875rem var(--font-title);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-strong-dk) 25%, transparent); }
+.toolbar button, .present-bar button, .sheet-tools button { display: inline-flex; align-items: center; gap: 0.4rem; }
+.format-bar { display: flex; align-items: center; gap: 0.125rem; padding: 0.2rem; border-radius: 999px; background: white; border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent); }
+.toolbar .format-bar button { border: none; padding: 0.4rem; background: transparent; color: var(--color-ink); }
+.toolbar .format-bar button:hover { background: var(--color-accent-lt); }
+.format-sep { width: 1px; height: 1.1rem; margin: 0 0.25rem; background: color-mix(in srgb, var(--color-ink) 12%, transparent); }
+.swatch-dot { display: block; width: 1rem; height: 1rem; border-radius: 999px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 15%, transparent); }
+/* Card bar: scale, background, delete */
+.react-grid-item { --s: 1; }
+.has-bg > .cell { background: var(--bg) !important; }
+.cell-img img { transform: scale(var(--s)); }
+.card-bar { position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 15;
+  display: none;
+  gap: 0.125rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-strong-dk) 18%, transparent);
+  cursor: default; }
+.react-grid-item:hover > .card-bar { display: flex; }
+.card-bar button { display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem; border: none; border-radius: 999px; background: transparent; color: var(--color-strong); cursor: pointer; }
+.card-bar button:hover, .card-bar button.on { background: var(--color-accent-lt); }
+.card-colors { position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  width: 11rem;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-strong-dk) 18%, transparent); }
+.card-colors .card-colors-reset { font: 600 0.75rem var(--font-title); padding: 0.3rem 0.6rem; }
+.cell-img .chip { box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 10%, transparent); }
+.slot-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; margin: 3.5rem 1.25rem 0; border: 2px dashed color-mix(in srgb, var(--color-strong) 25%, transparent); border-radius: 0.75rem; color: color-mix(in srgb, var(--color-strong) 55%, transparent); font: 500 0.9375rem var(--font-title); }
+/* Mini footer, below the sheets; room left for the floating toolbar */
+.sheets { padding-bottom: 1rem; }
+.sheet-tools { display: flex; gap: 0.625rem; }
+.sheet-tools button.primary { background: var(--color-strong); border-color: var(--color-strong); color: white; }
+.sheet-tools button.primary:hover { background: var(--color-strong-lt); }
+.sheet-tools button:disabled { opacity: 0.45; cursor: default; }
+.sheet-tools button.primary:disabled, .toolbar button.primary:disabled { opacity: 1; background: #E3EED8; border-color: #C9DDB6; color: #3F6B2E; }
+.toolbar button.on { background: var(--color-strong); border-color: var(--color-strong); color: white; }
+/* A4 sheets are square, only the cards inside are rounded */
+.sheet { border-radius: 0 !important; }
+/* Sheet tools: add menu, reset confirmation */
+.sheet-tools { align-items: center; position: relative; z-index: 30; }
+/* above the grid, so the add menu takes the clicks */
+.add-wrap { position: relative; }
+.add-menu { position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 14rem;
+  padding: 0.375rem;
+  border-radius: 0.875rem;
+  background: white;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-strong-dk) 18%, transparent); }
+.sheet-tools .add-menu button { justify-content: flex-start; border: none; border-radius: 0.5rem; }
+.sheet-tools button.on { background: var(--color-accent-lt); }
+.sheet-tools button.danger { background: #E85C3E; border-color: #E85C3E; color: white; }
+/* Gallery modal */
+.modal-back { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 2rem; background: color-mix(in srgb, var(--color-strong-dk) 35%, transparent); backdrop-filter: blur(4px); }
+.modal { display: flex; flex-direction: column; width: min(64rem, 100%); height: min(46rem, 85vh); border-radius: 1.25rem; background: var(--color-paper); box-shadow: 0 24px 60px color-mix(in srgb, var(--color-strong-dk) 30%, transparent); overflow: hidden; }
+.modal header { flex-shrink: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); font: 600 1rem var(--font-title); color: var(--color-strong); }
+.modal header > span { margin-right: auto; }
+.modal header button, .modal-upload { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.9rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); background: white; color: var(--color-strong); font: 600 0.8125rem var(--font-title); cursor: pointer; }
+.modal header button:hover, .modal-upload:hover { background: var(--color-accent-lt); }
+.modal-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); grid-auto-rows: max-content; align-content: start; gap: 0.5rem; padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
+.modal-tile { position: relative; }
+.modal-grid .modal-pick { display: block; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 2px solid transparent; border-radius: 0.625rem; overflow: hidden; background: white; cursor: pointer; }
+.modal-grid .modal-pick:hover { border-color: var(--color-accent); }
+.modal-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cell-img .slot-empty, .tool-img .slot-empty { height: calc(100% - 2.5rem); margin: 1.25rem; }
+.tool-img .slot-empty { height: calc(100% - 2.5rem); }
+.has-img .slot-empty { border: none; background: var(--img) center / cover no-repeat; transform: scale(var(--s)); }
+.has-img .slot-empty > * { display: none; }
+.slot-size { font-size: 0.8125rem; line-height: 1.4; text-align: center; opacity: 0.75; }
+/* Texture over every sheet, picked in the toolbar: paper (fibres) or film grain; soft-light keeps colours true */
+.sheet::after { content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  mix-blend-mode: soft-light; }
+/* Page footer: one line, outside the grid */
+.sheet-foot { position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0 1.25rem 0.5rem;
+  font: 400 0.6875rem var(--font-body);
+  color: color-mix(in srgb, var(--color-ink) 50%, transparent); }
+.sheet-foot img { height: 0.7rem; width: auto; opacity: 0.5; }
+.sheet-foot-n { justify-self: end; font-variant-numeric: tabular-nums; }
+.sheet-foot-text { text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-foot-n { white-space: nowrap; }
+/* Archived sheets: shown dimmed in the editor only */
+.archive { display: flex; flex-direction: column; align-items: center; gap: 2rem; width: 100%; margin-top: 3rem; padding-top: 2.5rem; border-top: 2px dashed color-mix(in srgb, var(--color-strong) 25%, transparent); }
+.archive-title { font: 700 1.75rem var(--font-title); color: var(--color-strong); }
+.archive-note { margin-top: -1.5rem; font-size: 0.9375rem; color: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.sheet-tools-left { display: flex; align-items: center; gap: 0.625rem; margin-right: auto; }
+.sheet-tools-name { font: 600 0.875rem var(--font-title); color: var(--color-strong); margin: 0 0.25rem; }
+.archive .page { opacity: 1; }
+.has-img .tool-img .slot-empty { margin: 0; height: 100%; border-radius: 0; }
+/* Resize handles: invisible hit areas on every side and corner; on hover the corners show
+   a round knob and the sides a short pill, in the lilac of the brand */
+.react-grid-item > .react-resizable-handle { background: none !important; opacity: 0; transition: opacity 0.15s; z-index: 16; }
+.react-grid-item:hover > .react-resizable-handle { opacity: 1; }
+.react-grid-item > .react-resizable-handle::after { content: ''; position: absolute; border: none; background: white; box-shadow: 0 0 0 1.5px var(--color-accent-dk), 0 2px 6px color-mix(in srgb, var(--color-strong-dk) 25%, transparent); }
+/* corners */
+.react-grid-item > .react-resizable-handle.react-resizable-handle-ne, .react-grid-item > .react-resizable-handle.react-resizable-handle-nw, .react-grid-item > .react-resizable-handle.react-resizable-handle-se, .react-grid-item > .react-resizable-handle.react-resizable-handle-sw { width: 20px; height: 20px; margin: 0; transform: none !important; }
+.react-grid-item > .react-resizable-handle-nw { top: -8px; left: -8px; cursor: nwse-resize; }
+.react-grid-item > .react-resizable-handle-ne { top: -8px; right: -8px; cursor: nesw-resize; }
+.react-grid-item > .react-resizable-handle-sw { bottom: -8px; left: -8px; cursor: nesw-resize; }
+.react-grid-item > .react-resizable-handle-se { bottom: -8px; right: -8px; cursor: nwse-resize; }
+.react-grid-item > :is(.react-resizable-handle-ne, .react-resizable-handle-nw, .react-resizable-handle-se, .react-resizable-handle-sw)::after { inset: 5px; width: auto; height: auto; border-radius: 50%; }
+/* sides */
+.react-grid-item > .react-resizable-handle.react-resizable-handle-n, .react-grid-item > .react-resizable-handle.react-resizable-handle-s { left: 1.5rem !important; right: 1.5rem !important; width: auto !important; height: 14px !important; margin: 0 !important; transform: none !important; cursor: ns-resize; }
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e, .react-grid-item > .react-resizable-handle.react-resizable-handle-w { top: 1.5rem !important; bottom: 1.5rem !important; height: auto !important; width: 14px !important; margin: 0 !important; transform: none !important; cursor: ew-resize; }
+.react-grid-item > .react-resizable-handle-n { top: -7px; }
+.react-grid-item > .react-resizable-handle-s { bottom: -7px; }
+.react-grid-item > .react-resizable-handle-e { right: -7px; }
+.react-grid-item > .react-resizable-handle-w { left: -7px; }
+.react-grid-item > :is(.react-resizable-handle-n, .react-resizable-handle-s)::after { left: 50%; top: 50%; width: 28px; height: 6px; margin: -3px 0 0 -14px; border-radius: 999px; }
+.react-grid-item > :is(.react-resizable-handle-e, .react-resizable-handle-w)::after { left: 50%; top: 50%; width: 6px; height: 28px; margin: -14px 0 0 -3px; border-radius: 999px; }
+.react-grid-item > .react-resizable-handle:hover::after { background: var(--color-accent-lt); }
+.sheet-tools button.round { width: 2rem; height: 2rem; padding: 0; justify-content: center; border-radius: 50%; }
+.sheet-tools-name { margin: 0 0.375rem 0 0.25rem; }
+/* Buttons: a small lift with a soft drop shadow on hover */
+:is(.toolbar, .sheet-tools, .card-bar, .present-bar, .modal header, .add-menu, .card-colors, .format-bar) button, .modal-upload { transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.15s ease; }
+:is(.toolbar, .sheet-tools, .card-bar, .present-bar, .modal header, .card-colors, .format-bar) button:not(:disabled):hover, .modal-upload:hover { transform: scale(1.06);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-strong-dk) 12%, transparent), 0 2px 4px color-mix(in srgb, var(--color-strong-dk) 6%, transparent); }
+.add-menu button:hover { box-shadow: 0 4px 12px color-mix(in srgb, var(--color-strong-dk) 10%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+:is(.toolbar, .sheet-tools, .card-bar, .present-bar, .modal header, .card-colors, .format-bar) button:hover, .modal-upload:hover { transform: none; }
+}
+/* One-line title bar at the top of a sheet, the footer's twin */
+.sheet-head { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; padding: 0.5rem 1.25rem 0; }
+.sheet-head h2 { font: 600 1rem var(--font-title); color: var(--color-strong); }
+/* Footer dividers: a small drawn dot, no character in the text */
+.sheet-foot-dot { display: inline-block; width: 3px; height: 3px; margin: 0 0.95rem; border-radius: 50%; background: currentColor; opacity: 0.6; vertical-align: middle; }
+/* Approved sheet: green lock button, a thin green frame, no editing */
+.sheet-tools button.approved { background: #3F8A4E; border-color: #3F8A4E; color: white; }
+.sheet-tools button.approved:hover { background: #357742; }
+.sheet-tools button.unapproved { background: #E6E3DE; border-color: #D6D2CB; color: #5A554F; }
+.sheet-tools button.unapproved:hover { background: #DAD6CF; }
+.is-approved { box-shadow: 0 0 0 3px #3F8A4E, 0 0 36px 6px rgba(63, 138, 78, 0.35); }
+.is-approved .react-grid-item:hover { outline: none; }
+.is-approved, .is-approved * { user-select: none; -webkit-user-select: none; cursor: default !important; }
+.is-approved .react-resizable-handle, .is-approved .card-bar { display: none !important; }
+/* Text formatting bar: its own floating bar above the main toolbar */
+.format-float { position: fixed; left: 50%; bottom: 5.5rem; transform: translateX(-50%); z-index: 50; padding: 0.3rem; border-radius: 999px; background: color-mix(in srgb, var(--color-paper) 90%, transparent); backdrop-filter: blur(12px); border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); box-shadow: 0 10px 30px color-mix(in srgb, var(--color-strong-dk) 14%, transparent); }
+.format-float .format-bar { border: none; background: transparent; }
+.format-float .format-bar button { border: none; padding: 0.45rem; border-radius: 999px; background: transparent; color: var(--color-ink); cursor: pointer; display: inline-flex; }
+.format-float .format-bar button:hover { background: var(--color-accent-lt); }
+.font-chip { font-size: 0.8125rem; font-weight: 600; padding: 0 0.15rem; }
+.sheets.present .is-approved { box-shadow: none; }
+/* Card size in grid blocks, shown on hover while moving cards */
+.card-size { position: absolute; right: 1.25rem; bottom: 0.75rem; z-index: 15; display: none; padding: 0.25rem 0.55rem; border-radius: 999px; background: white; color: var(--color-strong); box-shadow: 0 2px 8px color-mix(in srgb, var(--color-strong-dk) 15%, transparent); font: 600 0.6875rem var(--font-title); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; pointer-events: none; }
+.react-grid-item:hover > .card-size, .card-size.is-live { display: block; }
+.modal-del { position: absolute; top: 0.4rem; right: 0.4rem; display: none; align-items: center; gap: 0.3rem; padding: 0.35rem; border: none; border-radius: 999px; background: white; color: var(--color-strong); font: 600 0.75rem var(--font-title); box-shadow: 0 2px 8px color-mix(in srgb, var(--color-strong-dk) 20%, transparent); cursor: pointer; }
+.modal-tile:hover .modal-del, .modal-del.armed { display: inline-flex; }
+.modal-del:hover { background: var(--color-accent-lt); }
+.modal-del.armed { background: #E85C3E; color: white; padding: 0.35rem 0.6rem; }
+@media print {
+html, body { min-height: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { background: white; }
+.sheets { display: block; padding: 0; gap: 0; }
+/* 100rem = 1600px, A4 landscape width = 1123px */
+.sheet { margin: 0; border-radius: 0; zoom: 0.7018; height: 70.71rem !important; break-after: page; }
+.sheets > :last-child .sheet { break-after: auto; }
+.page { display: block; }
+.sheet-wrap { display: block; }
+.sheet-tools, .react-resizable-handle, .toolbar, .present-bar, .toast, .card-bar, .card-size, .format-float, .modal-back, .archive { display: none !important; }
+.sheets.present { position: static; display: block; background: none; }
+.sheets.present .page { display: block; }
+.sheets.present .sheet { zoom: 0.7018; }
+.is-approved { box-shadow: none; }
+.react-grid-item:hover { outline: none; }
+}
+/* Image with caption, no box: the picture and one italic line under it */
+.cell-media { background: transparent; padding: 0; gap: 0.5rem; display: flex; flex-direction: column; box-shadow: none; border: 0; }
+.cell-media .tool-img { flex: 1; min-height: 0; border-radius: 0.75rem; overflow: hidden; }
+.cell-media .tool-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cell-media .slot-empty { height: 100%; margin: 0; }
+.media-caption { margin: 0; font: italic 400 0.8125rem/1.4 var(--font-body); color: color-mix(in srgb, var(--color-ink) 70%, transparent); }
+/* Caption sits inside the picture, bottom left */
+.cell-media { position: relative; gap: 0; }
+.cell-media .media-caption { position: absolute; left: 0.875rem; right: 0.875rem; bottom: 0.75rem; font-size: 0.6875rem; line-height: 1.35; }
+/* While a card is dragged or resized, the edit chips stay hidden on every card */
+.react-grid-layout:has(.react-draggable-dragging, .resizing) .card-bar { display: none !important; }
+/* Editor settings: icon-only sheet commands, optional card bars and size chips */
+.sheet-tools .count { margin-left: 0.35rem; min-width: 1.15rem; padding: 0 0.3rem; border-radius: 999px; background: rgba(255, 255, 255, 0.25); font-size: 0.6875rem; line-height: 1.15rem; text-align: center; }
+.ui-icons .sheet-tools .lbl:not(.lbl-keep) { display: none; }
+.ui-icons .sheet-tools button { gap: 0; }
+.ui-icons .sheet-tools .add-menu button { gap: 0.4rem; }
+.ui-icons .sheet-tools .add-menu .lbl { display: inline; }
+.ui-nobar .card-bar { display: none !important; }
+.ui-nosize .card-size { display: none !important; }
+.settings { width: min(30rem, 100%); padding: 1.25rem 1.5rem 1.5rem; border-radius: 1.25rem; background: var(--color-paper); box-shadow: 0 24px 60px color-mix(in srgb, var(--color-strong-dk) 30%, transparent); color: var(--color-strong); }
+.settings-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.settings-head h2 { font: 600 1.25rem var(--font-title); margin: 0; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.875rem 0; border-top: 1px solid color-mix(in srgb, var(--color-strong) 12%, transparent); cursor: pointer; }
+.settings-row b { display: block; font: 500 0.9375rem var(--font-title); }
+.settings-row small { display: block; margin-top: 0.15rem; font-size: 0.8125rem; color: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.toggle { flex: none; position: relative; width: 2.5rem; height: 1.4rem; padding: 0; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--color-strong) 20%, transparent); cursor: pointer; transition: background 0.2s; }
+.toggle span { position: absolute; top: 0.2rem; left: 0.2rem; width: 1rem; height: 1rem; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: transform 0.2s; }
+.toggle.on { background: var(--color-accent); }
+.toggle.on span { transform: translateX(1.1rem); }
+.toggle:hover { filter: brightness(0.95); }
+/* Icon-only sheet commands: round buttons, close together, slightly larger icons */
+.ui-icons .sheet-tools, .ui-icons .sheet-tools-left { gap: 0.3rem; }
+.ui-icons .sheet-tools > button, .ui-icons .sheet-tools-left > button, .ui-icons .sheet-tools .add-wrap > button { justify-content: center; min-width: 2.25rem; height: 2.25rem; padding: 0 0.5rem; border-radius: 999px; }
+.ui-icons .sheet-tools > button svg, .ui-icons .sheet-tools-left > button svg, .ui-icons .sheet-tools .add-wrap > button svg { width: 1.15rem; height: 1.15rem; }
+.ui-icons .sheet-tools-left { margin-right: auto; }
+.ui-icons .sheet-tools-name { margin-right: 0.4rem; }
+/* Settings close button */
+.settings-head .round { display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-strong); cursor: pointer; transition: background 0.15s; }
+.settings-head .round:hover { background: var(--color-accent-lt); }
+/* Toolbar icon buttons and the save dock, fixed bottom right */
+.toolbar button.icon-btn { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; padding: 0; border-radius: 50%; }
+.toolbar button.icon-btn svg { width: 1.15rem; height: 1.15rem; }
+.toolbar button.icon-btn.is-busy svg { animation: kv-pulse 1s ease-in-out infinite; }
+@keyframes kv-pulse { 50% { opacity: 0.35; } }
+.save-dock { position: fixed; right: 1rem; bottom: 0.625rem; z-index: 50; display: flex; gap: 0.4rem; padding: 0.4rem; border-radius: 999px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); box-shadow: 0 8px 28px color-mix(in srgb, var(--color-strong-dk) 16%, transparent); }
+.save-dock button { display: inline-flex; align-items: center; gap: 0.4rem; font: 600 0.875rem var(--font-title); padding: 0.55rem 1.1rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); background: white; color: var(--color-strong); cursor: pointer; transition: background 0.15s; }
+.save-dock button:hover { background: var(--color-accent-lt); }
+.save-dock button.primary { background: var(--color-strong); border-color: var(--color-strong); color: white; }
+.save-dock button.primary:hover { background: var(--color-strong-lt); }
+.save-dock button.primary:disabled { opacity: 1; background: #E3EED8; border-color: #C9DDB6; color: #3F6B2E; cursor: default; }
+@media print {
+.save-dock { display: none !important; }
+}
+/* The plus of "add card" turns on hover */
+.sheet-tools .add-wrap > button svg { transition: transform 0.2s ease; }
+.sheet-tools .add-wrap > button:hover svg, .sheet-tools .add-wrap > button.on svg { transform: rotate(90deg); }
+/* Save chip: no wrapper, the button floats alone bottom right */
+.save-dock { padding: 0; background: none; backdrop-filter: none; box-shadow: none; }
+.save-dock button { box-shadow: 0 8px 24px color-mix(in srgb, var(--color-strong-dk) 18%, transparent); }
+/* Sidebar with every sheet; the sheets zoom to fit beside it */
+.sidebar { position: fixed; top: 0; left: 0; bottom: 0; z-index: 40; width: 216px; display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem 1rem 5rem; overflow-y: auto; background: color-mix(in srgb, var(--color-paper) 92%, transparent); backdrop-filter: blur(12px); border-right: 1px solid color-mix(in srgb, var(--color-strong) 10%, transparent); }
+.sidebar-brand { display: flex; flex-direction: column; gap: 0.25rem; padding: 0 0.25rem 0.5rem; text-decoration: none; }
+.sidebar-brand img { width: 7.5rem; height: auto; }
+.sidebar-brand span { font: 500 0.8125rem var(--font-title); color: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.sidebar-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.875rem; }
+.sidebar-list li.is-dragging { opacity: 0.4; }
+.sidebar-list li[draggable="true"] { cursor: grab; }
+.sidebar-list button { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; padding: 0.3rem; border: 0; border-radius: 0.6rem; background: none; text-align: left; cursor: pointer; transition: background 0.15s; }
+.sidebar-list button:hover { background: var(--color-accent-lt); }
+.thumb { width: 176px; height: 124.5px; overflow: hidden; border-radius: 0.4rem; background: white; box-shadow: 0 1px 4px color-mix(in srgb, var(--color-strong-dk) 15%, transparent); pointer-events: none; }
+.thumb .sheet { border-radius: 0; }
+.sidebar-name { display: flex; gap: 0.4rem; font: 500 0.75rem var(--font-title); color: var(--color-strong); }
+.sidebar-name i { font-style: normal; color: var(--color-accent-dk); }
+.sheets:not(.present) { padding-left: 216px; }
+/* Scale with transform (the grid knows how to drag inside a scaled box); the page box shrinks to match */
+.sheets:not(.present) .page { width: calc(1600px * var(--page-fit, 1)); display: flex; justify-content: center; }
+.sheets:not(.present) .sheet-wrap { flex: none; width: 1600px; transform: scale(var(--page-fit, 1)); transform-origin: top center; margin-bottom: calc((var(--page-fit, 1) - 1) * 1190px); }
+.toolbar { left: calc(50% + 108px); }
+.format-float { left: calc(50% + 108px); bottom: 4.5rem; }
+@media (max-width: 900px) {
+.sidebar { display: none; }
+.sheets:not(.present) { padding-left: 0; }
+.toolbar, .format-float { left: 50%; }
+}
+@media print {
+.sidebar { display: none !important; }
+.sheets { padding-left: 0 !important; }
+.sheet-wrap { transform: none !important; margin-bottom: 0 !important; width: auto !important; }
+.sheets .page { width: auto !important; display: block !important; }
+}
+/* Sheets rounded in the editor, square in the presentation */
+.sheets:not(.present) .sheet { border-radius: 1rem; }
+.sheets.present .sheet { border-radius: 0; }
+.format-float { bottom: 3.9rem; }
+@media print {
+.sheets .sheet { border-radius: 0 !important; }
+}
+/* Sidebar: header with collapse, tabs, settings at the bottom; closed it keeps only the logo */
+.sidebar-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+.sidebar .icon-btn { flex: none; display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-strong); cursor: pointer; transition: background 0.15s; }
+.sidebar .icon-btn:hover { background: var(--color-accent-lt); }
+.sidebar-settings { display: flex; align-items: center; gap: 0.5rem; margin-top: auto; padding: 0.55rem 0.75rem; border: 0; border-radius: 0.6rem; background: none; font: 600 0.8125rem var(--font-title); color: var(--color-strong); cursor: pointer; transition: background 0.15s; }
+.sidebar-settings:hover { background: var(--color-accent-lt); }
+.sidebar.is-closed { bottom: auto; width: auto; padding: 0.875rem 0.75rem 0.875rem 1rem; border-right: 0; border-radius: 0 0 1rem 0; box-shadow: 0 6px 20px color-mix(in srgb, var(--color-strong-dk) 12%, transparent); }
+.sidebar.is-closed .sidebar-top { align-items: center; gap: 0.75rem; }
+.side-closed .sheets:not(.present) { padding-left: 0; }
+.side-closed .toolbar, .side-closed .format-float { left: 50%; }
+/* Toast bottom right, just above the save chip */
+.toast { left: auto; right: 1rem; bottom: 4rem; transform: none; }
+/* Closed sidebar: a floating chip, detached from the edges */
+.sidebar.is-closed { top: 1rem; left: 1rem; border: 1px solid color-mix(in srgb, var(--color-strong) 10%, transparent); border-radius: 1rem; }
+/* Portrait documents (thesis covers): A4 portrait, same pixel density as the tavole (1600px = 297mm) */
+.doc-portrait .sheet { width: var(--sheet-w); height: var(--sheet-h); }
+.doc-portrait .sheets:not(.present) .page { width: calc(var(--sheet-w) * var(--page-fit, 1)); }
+.doc-portrait .sheets:not(.present) .sheet-wrap { width: var(--sheet-w); margin-bottom: calc((var(--page-fit, 1) - 1) * (var(--sheet-h) + 60px)); }
+.doc-portrait .thumb { width: calc(var(--sheet-w) * 0.11); height: 176px; }
+@media print {
+.doc-portrait .sheet, .doc-portrait .sheets.present .sheet { height: var(--sheet-h) !important; zoom: var(--print-zoom) !important; }
+}
+.sidebar-top { align-items: center; }
+.sidebar-top .sidebar-brand { margin-right: auto; }
+.sidebar .icon-btn.on { background: var(--color-strong); color: white; }
+.sidebar-label { margin: 0; padding: 0 0.25rem; font: 600 0.75rem var(--font-title); color: var(--color-strong); }
+/* Inner margin set by hand on a card */
+.has-pad > .cell { padding: var(--pad) !important; }
+.card-pad { display: flex; align-items: center; gap: 0.6rem; flex-wrap: nowrap; white-space: nowrap; font: 500 0.75rem var(--font-title); color: var(--color-strong); }
+.card-pad input { width: 8rem; accent-color: var(--color-strong); cursor: pointer; }
+.card-pad b { min-width: 3.2rem; font-variant-numeric: tabular-nums; }
+/* Settings stepper (page margin, gap) */
+.stepper { display: inline-flex; align-items: center; gap: 0.4rem; }
+.stepper button { width: 1.75rem; height: 1.75rem; border: 1px solid color-mix(in srgb, var(--color-strong) 20%, transparent); border-radius: 50%; background: white; color: var(--color-strong); font: 600 1rem var(--font-title); cursor: pointer; transition: background 0.15s; }
+.stepper button:hover { background: var(--color-accent-lt); }
+.stepper b { min-width: 2.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+/* Sidebar: a floating panel, open or closed; height and width animate between the two */
+.sidebar { top: 1rem; left: 1rem; bottom: auto; height: calc(100vh - 2rem);
+  padding: 1rem 0.875rem 1rem; gap: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--color-strong) 10%, transparent); border-radius: 1.25rem;
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--color-strong-dk) 12%, transparent);
+  overflow: hidden auto; scrollbar-width: thin;
+  transition: height 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sidebar.is-closed { width: 11rem; height: 3.5rem; padding: 0.75rem 0.75rem 0.75rem 1rem; border: 1px solid color-mix(in srgb, var(--color-strong) 10%, transparent); border-radius: 1.25rem; overflow: hidden; }
+.sidebar > :not(.sidebar-top) { animation: side-in 0.32s 0.06s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes side-in { from { opacity: 0; transform: translateY(-6px); } }
+.sidebar-top { gap: 0.25rem; padding-bottom: 0.25rem; }
+.sidebar-brand { padding: 0 0.25rem; }
+.sidebar-brand img { width: 6.5rem; }
+.sidebar-list { gap: 0.5rem; padding-top: 0.25rem; border-top: 1px solid color-mix(in srgb, var(--color-strong) 8%, transparent); }
+.sidebar-list button { align-items: center; padding: 0.5rem; }
+.sidebar-name { align-self: stretch; }
+.sidebar-settings { flex: none; }
+.sheets:not(.present) { padding-left: 232px; transition: padding-left 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.toolbar, .format-float { left: calc(50% + 116px); transition: left 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.side-closed .sheets:not(.present) { padding-left: 0; }
+.side-closed .toolbar, .side-closed .format-float { left: 50%; }
+@media (prefers-reduced-motion: reduce) {
+.sidebar, .sidebar > *, .sheets, .toolbar { transition: none !important; animation: none !important; }
+}
+/* Portrait pages shrink a lot to fit the height: the sheet tools keep their real size (they grow upward into the gap) */
+.doc-portrait .sheets:not(.present) .sheet-tools { width: calc(100% * var(--page-fit, 1)); transform: scale(calc(1 / var(--page-fit, 1))); transform-origin: bottom left; }
+/* Bleed sheets: one surface edge to edge, no rounded cards */
+.sheet-bleed .react-grid-item, .sheet-bleed .cell { border-radius: 0 !important; }
+/* Sidebar foot: settings and the archive icon side by side */
+.sidebar-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: auto; }
+.sidebar-foot .sidebar-settings { margin-top: 0; }
+/* same as the chapter titles */
+/* ?bg: the pages without their texts (the Word version puts live text on top) */
+.export-bg .cell :is(h2, h3, p, dt, dd, .chip), .export-bg .cell :is(h2, h3, p, dt, dd, .chip) * { color: transparent !important; -webkit-text-fill-color: transparent !important; }
+/* side padding 20 mm */
+/* Every non-tavole format: thumbnail from the sheet size (scale 0.11 = 176px on the long side) */
+.doc-portrait .thumb { width: calc(var(--sheet-w) * 0.11); height: calc(var(--sheet-h) * 0.11); }
+/* the capture fills the card height above the caption */
+.cell-media .tool-img img { transform: scale(var(--s)); }
+/* headset caption a little higher, closer to the picture */
+.cell-media .media-caption { bottom: 1.75rem; }
+/* chip type style (small caps, spacing), no pill */
+/* Bottom right dock: Presenta and Scarica PDF next to Salva */
+.dock { position: fixed; right: 1rem; bottom: 0.625rem; z-index: 50; display: flex; align-items: center; gap: 0.5rem; }
+.dock .toolbar { position: static !important; left: auto !important; right: auto !important; bottom: auto !important; transform: none !important; margin: 0; }
+.dock .save-dock { position: static; }
+/* Text formatting bar: centred at the bottom of the screen */
+.format-float, .side-closed .format-float { left: 50% !important; bottom: 0.75rem !important; transform: translateX(-50%) !important; }
+/* a little more air between QR and link */
+.sheet-foot-dot { margin: 0 0.5rem; }
+/* more air under "Il progetto artistico" */
+/* Presenta and Scarica: floating buttons, no wrapper (each button carries its own shadow, like Salva) */
+.dock .toolbar { padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; gap: 0.4rem; }
+.dock .toolbar button.icon-btn { background: white; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); box-shadow: 0 8px 24px color-mix(in srgb, var(--color-strong-dk) 18%, transparent); cursor: pointer; }
+.dock .toolbar button.icon-btn:hover { background: var(--color-accent-lt); }
+/* same size as the project text */
+/* Real bulleted lists inside card texts: small lilac dots, tight spacing */
+[data-card] :is(p, dd) ul { margin: 0.35em 0 0; padding-left: 1.1em; list-style: none; }
+[data-card] :is(p, dd) ul li { position: relative; }
+[data-card] :is(p, dd) ul li::before { content: ''; position: absolute; left: -0.85em; top: 0.62em; width: 4px; height: 4px; border-radius: 50%; background: var(--color-accent-dk); }
+[data-card] :is(p, dd) ol { margin: 0.35em 0 0; padding-left: 1.3em; list-style: decimal; }
+/* PDF state button: green when the PDF in out/ is up to date, orange when it needs regenerating */
+.dock .toolbar button.pdf-state.is-fresh { color: #3F6B2E; background: #E3EED8; border-color: #C9DDB6; }
+.dock .toolbar button.pdf-state.is-stale { color: #9A3418; background: #FFE3D0; border-color: #F5C2A4; }
+.dock .toolbar button.pdf-state.is-busy svg { animation: kv-spin 1s linear infinite; }
+@keyframes kv-spin { to { transform: rotate(360deg); } }
+.dock .toolbar button.pdf-state.is-busy svg { animation-direction: reverse; }
+/* spin the way the arrows point */
+/* regenerate icon mirrored, spinning counter-clockwise like its mirrored arrows */
+.dock .toolbar button.pdf-state.is-busy svg { animation: kv-spin-mirror 1s linear infinite !important; }
+@keyframes kv-spin-mirror { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(360deg); } }
+/* step 15 shifted 10px left */
+@media print {
+.sheet::after, .cell::after { display: none !important; }
+}
+/* PDF without the grain (web keeps it) */
+/* Inline rename of a sheet from its name in the tools bar */
+.sheet-tools button.sheet-tools-name { border: none; background: none; padding: 0.2rem 0.4rem; border-radius: 0.5rem; cursor: pointer; }
+.sheet-tools button.sheet-tools-name:hover { background: var(--color-accent-lt); }
+.sheet-rename { font: inherit; color: inherit; width: 16rem; padding: 0.2rem 0.5rem; border: 1px solid var(--color-strong); border-radius: 0.5rem; background: white; outline: none; }
+.video-bar { position: absolute; left: 1rem; right: 1rem; bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; z-index: 1; }
+.video-bar p { padding: 0.45rem 0.9rem; border-radius: 999px; background: color-mix(in srgb, var(--color-paper) 94%, transparent); font: 600 1.125rem var(--font-title); color: var(--color-strong); }
+.video-bar button { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: none; display: grid; place-items: center; background: color-mix(in srgb, var(--color-paper) 94%, transparent); color: var(--color-strong); cursor: pointer; transition: background 0.15s; }
+.video-bar button:hover { background: white; }
+/* Document picker in the sidebar: current document, the list in a popover */
+.doc-picker { position: relative; z-index: 100; }
+/* above the thumbnails, which carry their own z-indexed layers */
+.doc-picker button { width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem; border: 1px solid color-mix(in srgb, var(--color-strong-dk) 12%, transparent); border-radius: 0.75rem; background: white; color: var(--color-strong); text-align: left; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.doc-picker button:hover { background: var(--color-accent-lt); border-color: var(--color-accent); }
+.doc-picker img { flex: none; width: 2.75rem; height: 2rem; border-radius: 0.45rem; object-fit: cover; }
+.doc-picker span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.doc-picker b { font: 600 0.875rem/1.2 var(--font-title); }
+.doc-picker small { font-size: 0.6875rem; color: color-mix(in srgb, var(--color-ink) 55%, transparent); }
+.doc-picker-list { position: absolute; left: 0; right: 0; top: calc(100% + 0.4rem); z-index: 60; list-style: none; display: flex; flex-direction: column; gap: 0.3rem; padding: 0.4rem; border-radius: 0.9rem; background: white; box-shadow: 0 12px 32px color-mix(in srgb, var(--color-strong-dk) 18%, transparent); }
+.doc-picker-list button { border-color: transparent; }
+.doc-picker-list button.on { background: var(--color-accent-lt); }
+/* Video cards: the video fills the card, the bar sits on top; the gallery shows the first frame */
+.cell-video { padding: 0; background: var(--color-strong-dk); }
+.cell-video video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.modal-pick video { display: block; width: 100%; height: 100%; object-fit: cover; }
+@property --sx { syntax: '<percentage>'; inherits: false; initial-value: 6%; }
+@property --sy { syntax: '<percentage>'; inherits: false; initial-value: 8%; }
+@keyframes shapes-drift { 50% { --sx: 30%; --sy: 22%; } to { --sx: 14%; --sy: 46%; } }
+/* video: play and pause next to full screen; the video itself is clickable */
+.video-actions { display: flex; gap: 0.5rem; }
+.video-bar button { cursor: pointer; }
+.cell-video video { cursor: pointer; }
+/* one lock on: the frame stays plain, the locked side just does not respond */
+.is-locked .react-resizable-handle, .is-locked .card-bar { display: none !important; }
+.sheet-tools button.approved svg + svg, .sheet-tools button.unapproved svg + svg { margin-left: -0.2rem; }
+/* layout locked: no hover frame on the cards */
+.is-layout-locked .react-grid-item:hover { outline: none; }
+.is-layout-locked .react-resizable-handle, .is-layout-locked .card-size { display: none !important; }
