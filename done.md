@@ -12,3 +12,6 @@
 - [x] kaivros-project merged on all branches, project.kaivros.com live on the engine (gate checked locally and live)   <!-- done: 2026-10-06 -->
 - [x] Bioplast engine branch merged into dev, gated dev preview deployed (CI gate check ok)   <!-- done: 2026-10-06 -->
 - [x] Neutral editor interface, engine mark and favicon (0.2.0)   <!-- done: 2026-10-06 -->
+- [x] theme.json errors shown as a toast in the editor   <!-- done: 2026-10-06 -->
+- [x] Card blocks in the engine (Head, Tile, ToolCard, QrCard); Kaivros keeps its own rules after them, pages unchanged   <!-- done: 2026-10-06 -->
+- [x] examples/minimal demo presentation   <!-- done: 2026-10-06 -->

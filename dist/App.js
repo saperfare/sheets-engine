@@ -118,7 +118,7 @@ function DocPicker({ docs, ids, current, onPick }) {
                             onPick(d); }, children: [row(d), d === current && _jsx(IconCheck, { size: 16, stroke: 2 })] }) }, d))) }))] }));
 }
 // The editor and the read-only site of one presentation
-export function PresentationApp({ config, theme, data: initial }) {
+export function PresentationApp({ config, theme, data: initial, themeErrors = [] }) {
     const DOCS = config.docs;
     const ids = Object.keys(DOCS);
     const PUBLIC_DOCS = ids.filter(d => DOCS[d].public);
@@ -244,11 +244,17 @@ export function PresentationApp({ config, theme, data: initial }) {
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    const notify = (msg) => {
+    const notify = (msg, ms = 3500) => {
         clearTimeout(toastTimer.current);
         setToast(msg);
-        toastTimer.current = window.setTimeout(() => setToast(null), 3500);
+        toastTimer.current = window.setTimeout(() => setToast(null), ms);
     };
+    // A broken theme.json is said in the editor, not only in the console
+    useEffect(() => {
+        if (EDITOR && themeErrors.length)
+            notify(`theme.json da correggere: ${themeErrors.join(', ')}`, 12000);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const dirty = layouts.dirty.length + texts.dirty.length + cards.dirty.length;
     window.__dirty = dirty > 0;
     // Saves every pending edit, or only those of one sheet. Values are snapshotted first,

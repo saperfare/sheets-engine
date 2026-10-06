@@ -627,3 +627,86 @@ body { background: white; }
 /* the engine's mark in the editor sidebar (the published site shows the presentation's logo) */
 .engine-mark { display: inline-flex; align-items: center; gap: 0.45rem; font: 700 1.0625rem/1 var(--ui-font); letter-spacing: -0.01em; color: var(--ui-strong); }
 .engine-mark svg { color: var(--ui-accent); }
+/* Reusable card blocks (Head, Tile, ToolCard, QrCard), from the Kaivros sheets; colours from the theme */
+.cell-head { background: var(--color-paper); }
+.cell-head .chip { margin-top: 0; }
+.sheet-title { margin-top: auto;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 2.75rem;
+  line-height: 1.05;
+  letter-spacing: -0.01em; }
+.sheet-desc { margin-top: 0.875rem; max-width: 34rem; font-size: 1rem; line-height: 1.55; color: color-mix(in srgb, var(--color-ink) 62%, transparent); }
+.cell-tool { padding: 0; background: var(--color-paper); }
+.tool-caption { flex-shrink: 0; min-height: 9.25rem; padding: 1rem 1.25rem 1.25rem; }
+.tool-head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.375rem; }
+.tool-name { font-family: var(--font-title); font-weight: 600; font-size: 1.375rem; }
+.tool-line { font-size: 0.9375rem; line-height: 1.45; color: color-mix(in srgb, var(--color-ink) 68%, transparent); }
+.cell-head-top .sheet-title { margin-top: 0.25rem; }
+.facts { display: grid; gap: 0.75rem; margin-top: 1.5rem; }
+.facts { gap: 1.5rem; margin-top: 2.25rem; }
+.facts div { padding: 0; border-radius: 0; background: none; }
+.facts dt { font: 600 0.6875rem var(--font-title); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent-dk); margin-bottom: calc(0.2rem + 2px); }
+.facts dd { font-size: 1rem; line-height: 1.45; color: color-mix(in srgb, var(--color-ink) 78%, transparent); }
+.sheet-desc p + p, .sheet-desc p + dl { margin-top: 0.75rem; }
+.tool-caption { height: 9.25rem; min-height: 0; }
+.tool-head { align-items: center; min-height: 1.75rem; }
+.tool-name { line-height: 1.1; }
+.cell-online { background: var(--color-accent-lt); flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; text-align: center; }
+.cell-online img { width: 9rem; height: auto; }
+.online-url { font-size: 1rem; color: var(--color-strong); }
+.online-note { font-size: 0.8125rem; line-height: 1.35; color: color-mix(in srgb, var(--color-ink) 60%, transparent); margin-top: 0.125rem; }
+.cell-head-compact { padding: 1rem 1.25rem; }
+.cell-head-compact .sheet-title { font-size: 1.75rem; }
+.cell-head-compact .sheet-desc { margin-top: 0.375rem; font-size: 0.8125rem; line-height: 1.4; }
+.cell-logo-shapes, .cell-shapes { background:
+    radial-gradient(ellipse 60% 85% at 94% 92%, color-mix(in srgb, var(--color-accent) 36%, transparent), color-mix(in srgb, var(--color-accent) 15%, transparent) 42%, color-mix(in srgb, var(--color-accent) 4%, transparent) 68%, color-mix(in srgb, var(--color-accent) 0%, transparent) 90%),
+    var(--color-paper); }
+.cell-tool-overlay { position: relative; }
+.cell-tool-overlay .tool-img { position: absolute; inset: 0; }
+.cell-tool-overlay .tool-caption { position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  height: auto;
+  padding: 0.75rem 0.9rem 0.85rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-strong-dk) 12%, transparent); }
+.cell-tool-overlay .tool-head { min-height: 0; margin-bottom: 0.25rem; }
+.cell-tool-overlay .tool-name { font-size: 1.125rem; }
+.cell-tool-overlay .tool-line { font-size: 0.8125rem; line-height: 1.4; }
+.cell-head-small .sheet-title { font-size: 2rem; }
+.cell-head-small .sheet-desc, .cell-head-small .sheet-desc p, .cell-head-small .facts dd { font-size: 0.8125rem; line-height: 1.4; }
+.cell-head-small .facts { gap: 1rem; margin-top: 1.5rem; }
+.cell-head-small .facts dt { font-size: 0.625rem; }
+.cell-tool-nested { background: var(--color-paper); padding: 0.625rem; gap: 0.625rem; }
+.cell-tool-nested .tool-img { border-radius: 0.625rem; overflow: hidden; }
+.cell-tool-nested .tool-caption { height: auto; padding: 0.5rem 0.5rem 0.375rem; border-radius: 0; background: none; }
+.cell-tool-nested .tool-head { min-height: 0; margin-bottom: 0.3rem; }
+.cell-tool-nested .tool-name { font-size: 1.125rem; }
+.cell-tool-nested .tool-line { font-size: 0.8125rem; line-height: 1.4; }
+.cell-head-small { background:
+    radial-gradient(ellipse 170% 60% at 0% 0%, color-mix(in srgb, var(--color-accent) 34%, transparent), color-mix(in srgb, var(--color-accent) 15%, transparent) 40%, color-mix(in srgb, var(--color-accent) 4%, transparent) 65%, color-mix(in srgb, var(--color-accent) 0%, transparent) 88%),
+    radial-gradient(ellipse 150% 48% at 100% 100%, color-mix(in srgb, var(--color-accent) 30%, transparent), color-mix(in srgb, var(--color-accent) 12%, transparent) 42%, color-mix(in srgb, var(--color-accent) 3%, transparent) 68%, color-mix(in srgb, var(--color-accent) 0%, transparent) 90%),
+    var(--color-paper); }
+.sheet-title { color: var(--color-strong); }
+.cell-logo-shapes { background:
+    radial-gradient(ellipse 95% 130% at 4% 6%, color-mix(in srgb, var(--color-accent) 40%, transparent), color-mix(in srgb, var(--color-accent) 17%, transparent) 42%, color-mix(in srgb, var(--color-accent) 5%, transparent) 68%, color-mix(in srgb, var(--color-accent) 0%, transparent) 90%),
+    var(--color-paper); }
+.cell-online { background:
+    radial-gradient(ellipse 85% 75% at 0% 100%, color-mix(in srgb, var(--color-accent) 42%, transparent), color-mix(in srgb, var(--color-accent) 16%, transparent) 45%, color-mix(in srgb, var(--color-accent) 4%, transparent) 70%, color-mix(in srgb, var(--color-accent) 0%, transparent) 92%),
+    var(--color-paper); }
+.cell-step .tool-img { aspect-ratio: 16 / 9; flex: none; }
+.cell-step .tool-caption { padding-top: 0.5rem; }
+.cell-step .tool-name { font-size: 0.875rem; }
+.cell-step .tool-img { aspect-ratio: auto; flex: 1; min-height: 0; }
+.cell-step .tool-img { border-radius: 0.75rem; overflow: hidden; }
+.cell-step .tool-caption { background: transparent; padding: 0.5rem 0.125rem 0; }
+.cell-step .tool-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cell-step .tool-line { font-size: 0.75rem; line-height: 1.4; }
+.cell-online > div { position: absolute; left: 0.875rem; right: 0.875rem; bottom: 0.75rem; }
+.cell-online .online-url { margin: 0; font: italic 400 0.6875rem/1.35 var(--font-body); }
+.cell-online > div { position: static; }
+.cell-online img { margin-bottom: 5px; }
+.cell-step .tool-caption { padding-top: 0.45rem !important; }

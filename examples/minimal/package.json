@@ -1,0 +1,8 @@
+{
+  "name": "sheets-engine-minimal",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build", "theme:check": "sheets-engine theme check theme.json" },
+  "dependencies": { "@saperfare/sheets-engine": "file:../..", "react": "^19.2.4", "react-dom": "^19.2.4" },
+  "devDependencies": { "@vitejs/plugin-react": "^6.0.1", "vite": "^8.0.1" }
+}

@@ -59,6 +59,10 @@ export function Cover() {
 }
 ```
 
+Ready-made cards (coloured by the theme): `Head` (title column with text and a `<dl className="facts">` list),
+`Tile` (picture), `ToolCard` (picture, name, chip, line; variants `overlay` and `nested`), `QrCard`.
+`examples/minimal` is a working presentation made only of them (`npm install && npm run dev` there).
+
 Every direct child needs a `key`: it is the card id that layouts, texts and images are saved under.
 `data-slot` makes a card an image slot; a card with a plain `<img>` can swap it from the gallery.
 

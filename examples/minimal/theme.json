@@ -1,0 +1,13 @@
+{
+  "$schema": "../../theme.schema.json",
+  "name": "Demo",
+  "colors": {
+    "paper": "#F7F5F0", "ink": "#1E1E24", "page": "#E9E6DF",
+    "accent-lt": "#FDE3CC", "accent": "#F2A65A", "accent-dk": "#B86A1E",
+    "strong-lt": "#3D405B", "strong": "#2B2D42", "strong-dk": "#1A1B2B"
+  },
+  "fonts": { "display": "Fraunces", "title": "Manrope", "body": "Manrope", "css": ["https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700&display=swap"] },
+  "logo": "/logo.svg",
+  "logoMono": "/logo.svg",
+  "texture": "none"
+}

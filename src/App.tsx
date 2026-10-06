@@ -138,7 +138,7 @@ function DocPicker({ docs, ids, current, onPick }: { docs: Record<string, DocCon
 type DocId = string
 
 // The editor and the read-only site of one presentation
-export function PresentationApp({ config, theme, data: initial }: { config: PresentationConfig; theme: Theme; data: PresentationData }) {
+export function PresentationApp({ config, theme, data: initial, themeErrors = [] }: { config: PresentationConfig; theme: Theme; data: PresentationData; themeErrors?: string[] }) {
   const DOCS = config.docs
   const ids = Object.keys(DOCS)
   const PUBLIC_DOCS = ids.filter(d => DOCS[d].public)
@@ -245,11 +245,16 @@ export function PresentationApp({ config, theme, data: initial }: { config: Pres
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const notify = (msg: string) => {
+  const notify = (msg: string, ms = 3500) => {
     clearTimeout(toastTimer.current)
     setToast(msg)
-    toastTimer.current = window.setTimeout(() => setToast(null), 3500)
+    toastTimer.current = window.setTimeout(() => setToast(null), ms)
   }
+  // A broken theme.json is said in the editor, not only in the console
+  useEffect(() => {
+    if (EDITOR && themeErrors.length) notify(`theme.json da correggere: ${themeErrors.join(', ')}`, 12000)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const dirty = layouts.dirty.length + texts.dirty.length + cards.dirty.length
   ;(window as { __dirty?: boolean }).__dirty = dirty > 0
