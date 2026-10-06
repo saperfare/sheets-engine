@@ -435,11 +435,12 @@ export function Sheet({ id, cols, rows, className = 'sheet', heading, bleed, nof
 
   // Text edits live in the DOM (contentEditable); React never rewrites these static nodes.
   // Keys are card + position inside the card, so adding or removing cards keeps them stable.
+  // data-text-key="x" makes a shared text (key "@x"): editing it in one place edits it on every sheet.
   useEffect(() => {
     ref.current?.querySelectorAll<HTMLElement>('[data-card]').forEach(card => {
       card.querySelectorAll<HTMLElement>(TEXT).forEach((el, n) => {
         if (el.closest('.card-bar')) return
-        const key = `${id}:${card.dataset.card}:${n}`
+        const key = el.dataset.textKey ? `@${el.dataset.textKey}` : `${id}:${card.dataset.card}:${n}`
         el.dataset.orig ??= el.innerHTML
         const orig = el.dataset.orig
         const t = texts[key]

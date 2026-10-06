@@ -263,9 +263,9 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   // so an edit typed while saving stays pending instead of being marked as saved.
   const commit = async (sheet?: string) => {
     const l = layouts.dirty.filter(i => !sheet || i === sheet)
-    // settings (order, archive, approval, texture) and the shared footer belong to every sheet
+    // settings (order, archive, approval, texture), the footer and shared texts (@key) belong to every sheet
     const c = cards.dirty.filter(i => !sheet || i === sheet || i === SET)
-    const t = texts.dirty.filter(k => !sheet || k.startsWith(sheet + ':') || k === FOOTER_KEY)
+    const t = texts.dirty.filter(k => !sheet || k.startsWith(sheet + ':') || k === FOOTER_KEY || k.startsWith('@'))
     if (!l.length && !c.length && !t.length) return
     const snap = { l: { ...layouts.ref.current }, t: { ...texts.ref.current }, c: { ...cards.ref.current } }
     setBusy('save')
@@ -287,7 +287,7 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   const pendingIn = (sheet: string) =>
     layouts.dirty.filter(i => i === sheet).length +
     cards.dirty.filter(i => i === sheet || i === SET).length +
-    texts.dirty.filter(k => k.startsWith(sheet + ':') || k === FOOTER_KEY).length
+    texts.dirty.filter(k => k.startsWith(sheet + ':') || k === FOOTER_KEY || k.startsWith('@')).length
 
   // Prints the saved version with headless Edge into out/; `download` also hands it to the browser.
   const makePdf = async (download: boolean) => {
