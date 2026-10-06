@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "sheets-engine theme",
+  "description": "The look of one presentation. Every key of colors becomes the CSS variable --color-<key>. The engine reads only the semantic keys; a presentation may add more for its own content CSS.",
+  "type": "object",
+  "required": ["colors", "fonts", "logo", "logoMono"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string" },
+    "colors": {
+      "type": "object",
+      "required": ["paper", "ink", "page", "accent-lt", "accent", "accent-dk", "strong-lt", "strong", "strong-dk"],
+      "properties": {
+        "paper": { "type": "string", "description": "Card surface and light backgrounds (cream)." },
+        "ink": { "type": "string", "description": "Body text." },
+        "page": { "type": "string", "description": "Editor background behind the sheets." },
+        "accent-lt": { "type": "string", "description": "Light accent: hovers, selected states, soft tints." },
+        "accent": { "type": "string", "description": "Accent: outlines, scrollbar, numbers, decorative shapes. Not for small text on paper." },
+        "accent-dk": { "type": "string", "description": "Dark accent: carets, small labels." },
+        "strong-lt": { "type": "string", "description": "Hover of strong buttons." },
+        "strong": { "type": "string", "description": "Brand dark: titles, primary buttons, toolbar text. Must read on paper (AA)." },
+        "strong-dk": { "type": "string", "description": "Darkest brand colour: shadows, overlays." }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "fonts": {
+      "type": "object",
+      "required": ["display", "title", "body"],
+      "properties": {
+        "display": { "type": "string", "description": "Font family for big numbers and display titles." },
+        "title": { "type": "string", "description": "Font family for titles and the editor interface." },
+        "body": { "type": "string", "description": "Font family for running text." },
+        "css": { "type": "array", "items": { "type": "string" }, "description": "Stylesheets that load the fonts (Google Fonts URLs or local files)." }
+      }
+    },
+    "logo": { "type": "string", "description": "Logo in the sidebar (path under public/)." },
+    "logoMono": { "type": "string", "description": "Small one-colour logo in the sheet footer." },
+    "radius": { "type": "string", "description": "Corner radius of the cards, e.g. 0.75rem." },
+    "texture": { "enum": ["grain", "none"], "description": "Default paper grain over the sheets." },
+    "palettes": {
+      "type": "object",
+      "properties": {
+        "background": { "type": "array", "items": { "type": "string" }, "description": "Backgrounds offered on every card (colours or CSS gradients)." },
+        "text": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 }, "description": "Text colours in the formatting bar: [colour, name]." }
+      }
+    }
+  }
+}
