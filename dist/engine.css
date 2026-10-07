@@ -162,6 +162,10 @@ body { font-family: var(--font-body);
 .sheets.present .sheet { zoom: var(--fit); border-radius: 0; }
 .sheets.present .react-grid-item { cursor: pointer; }
 .sheets.present .react-grid-item:hover { outline: none; }
+/* view only (published site, editor view mode): nothing to grab, no hover outline, no card tools */
+.sheets.mode-view .react-grid-item { cursor: auto; }
+.sheets.mode-view .react-grid-item:hover { outline: none; }
+.sheets.mode-view .react-grid-item > :is(.card-bar, .react-resizable-handle) { display: none !important; }
 .sheets.present .react-resizable-handle { display: none; }
 .present-bar { position: fixed;
   right: 1.25rem;
