@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { IconArchive, IconArrowBackUp, IconFileAlert, IconFileCheck, IconRefresh, IconCheck, IconDeviceFloppy, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconDownload, IconPresentation, IconLayoutBoard, IconSelector, IconSettings, IconX } from '@tabler/icons-react'
+import { IconArchive, IconArrowBackUp, IconFileAlert, IconFileCheck, IconRefresh, IconCheck, IconDeviceFloppy, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconDownload, IconPresentation, IconLayoutBoard, IconSelector, IconSettings, IconX, IconRulerMeasure } from '@tabler/icons-react'
+import { clearMeasures, drawMeasures } from './measure'
 import FormatBar, { TextColorsContext } from './FormatBar'
 import { EngineContext, FormatContext, LANDSCAPE, LayoutsContext, PageContext, ScaleContext, TEXT, type Cards, type Saved, type SheetCards, type TextEdit, type Texts } from './Sheet'
 import type { DocConfig, PresentationConfig, PresentationData } from './config'
@@ -257,6 +258,16 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   }, [])
 
   const dirty = layouts.dirty.length + texts.dirty.length + cards.dirty.length
+
+  // Spacing overlay (margins, gaps, paddings with their values), redrawn while on
+  const [measure, setMeasure] = useState(false)
+  useEffect(() => {
+    if (!measure) return clearMeasures()
+    drawMeasures()
+    // ponytail: redraw on a timer instead of tracking every drag and edit; 600 ms is enough for a visual check
+    const t = setInterval(drawMeasures, 600)
+    return () => { clearInterval(t); clearMeasures() }
+  }, [measure])
   ;(window as { __dirty?: boolean }).__dirty = dirty > 0
 
   // Saves every pending edit, or only those of one sheet. Values are snapshotted first,
@@ -425,6 +436,11 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
             <button type="button" className={busy === 'pdf' ? 'icon-btn is-busy' : 'icon-btn'} title={busy === 'pdf' ? 'Genero il PDF…' : 'Scarica PDF'} aria-label="Scarica PDF" onClick={downloadPdf} disabled={busy !== null}>
               <IconDownload {...I} />
             </button>
+            {EDITOR && (
+              <button type="button" className={measure ? 'icon-btn on' : 'icon-btn'} title={measure ? 'Nascondi le misure' : 'Mostra margini, gap e padding'} aria-label="Misure" aria-pressed={measure} onClick={() => setMeasure(m => !m)}>
+                <IconRulerMeasure {...I} />
+              </button>
+            )}
             {EDITOR && (
               <button type="button" className={`icon-btn pdf-state ${busy === 'pdf' ? 'is-busy' : pdfFresh ? 'is-fresh' : 'is-stale'}`} onClick={() => makePdf(false)} disabled={busy !== null}
                 title={busy === 'pdf' ? 'Genero il PDF…' : pdfFresh ? 'PDF aggiornato: clic per rigenerarlo' : 'PDF da aggiornare: clic per rigenerarlo senza scaricarlo'} aria-label="Rigenera PDF">
