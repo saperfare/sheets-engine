@@ -80,13 +80,14 @@ const pageFit = (open: boolean, f = LANDSCAPE) =>
 function Thumb({ id, stamp, w }: { id: string; stamp: string; w: number }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    const t = setTimeout(() => {
+    let t = 0
+    const draw = () => {
       const src = document.querySelector(`#sheet-${id} .sheet`)
       const box = ref.current
       if (!src || !box) return
       const copy = src.cloneNode(true) as HTMLElement
       copy.querySelectorAll('[contenteditable]').forEach(e => e.removeAttribute('contenteditable'))
-      copy.querySelectorAll('.card-bar, .card-size, .react-resizable-handle').forEach(e => e.remove())
+      copy.querySelectorAll('.card-bar, .card-size, .react-resizable-handle, .measure-layer').forEach(e => e.remove())
       copy.querySelectorAll('[data-card]').forEach(e => e.removeAttribute('data-card'))
       // videos stay still on their poster: no autoplay, no loop in the sidebar
       copy.querySelectorAll('video').forEach(v => { v.removeAttribute('autoplay'); v.autoplay = false; v.preload = 'none'; v.pause() })
@@ -94,8 +95,14 @@ function Thumb({ id, stamp, w }: { id: string; stamp: string; w: number }) {
       copy.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'))
       copy.style.zoom = String(THUMB_W / 1600)   // the long side is always 1600px
       box.replaceChildren(copy)
-    }, 400)
-    return () => clearTimeout(t)
+    }
+    const later = () => { clearTimeout(t); t = window.setTimeout(draw, 400) }
+    later()
+    // redraw whenever the page itself changes (texts, cards, pictures, code reloaded by Vite), not only on saves
+    const src = document.getElementById(`sheet-${id}`)
+    const mo = new MutationObserver(later)
+    if (src) mo.observe(src, { subtree: true, childList: true, attributes: true, characterData: true, attributeFilter: ['class', 'style', 'src', 'data-orig'] })
+    return () => { clearTimeout(t); mo.disconnect() }
   }, [id, stamp, w])
   return <div className="thumb" ref={ref} aria-hidden="true" />
 }
