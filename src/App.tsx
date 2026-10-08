@@ -617,9 +617,10 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
         id="top"
         className={`${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`}
         style={(presenting ? { '--fit': scale } : { '--page-fit': fitPage }) as unknown as CSSProperties}
-        onClick={presenting || !EDITOR
-          ? e => { if (zoomFrom(e.target as HTMLElement)) return; if (presenting) step(e.clientX > window.innerWidth / 2 ? 1 : -1) }
-          : undefined}
+        // a click zooms a picture or a video (present mode and site); in the editor a double click does it.
+        // Pages change only with the arrows or the buttons, never with a click.
+        onClick={presenting || !EDITOR ? e => { zoomFrom(e.target as HTMLElement) } : undefined}
+        onDoubleClick={EDITOR && !presenting ? e => { zoomFrom(e.target as HTMLElement) } : undefined}
       >
         {(tab === 'pages' || presenting) && order.map((id, i) => {
           const [Page] = doc.sheets[id]
