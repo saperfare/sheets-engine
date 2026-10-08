@@ -169,6 +169,22 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   const cards = useStore<SheetCards>()
   const [ready, setReady] = useState(false)
   const [docId, setDocId] = useState<DocId>(loadDoc)
+  // Loading veil while a document opens: until fonts and the pictures of its pages have loaded (8 s at most)
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    setLoading(true)
+    let done = false
+    const finish = () => { if (!done) { done = true; setLoading(false) } }
+    const t = setTimeout(async () => {
+      const imgs = [...document.querySelectorAll<HTMLImageElement>('main img')].filter(i => !i.complete)
+      await Promise.race([
+        Promise.all([document.fonts.ready, ...imgs.map(i => new Promise(r => { i.onload = i.onerror = r }))]),
+        new Promise(r => setTimeout(r, 8000)),
+      ])
+      finish()
+    }, 50)
+    return () => clearTimeout(t)
+  }, [docId])
   const doc = DOCS[docId]
   const SET = doc.settings ?? `settings:${docId}`
   const PDF_NAME = doc.pdf
@@ -560,6 +576,12 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
 
       {doc.format !== LANDSCAPE && <style>{`@page { size: ${doc.format.page}; margin: 0; }`}</style>}
       <FormatContext.Provider value={format}>
+      {loading && (
+        <div className="page-loading" role="status" aria-live="polite">
+          <span className="page-loading-spin" aria-hidden="true" />
+          <p>Carico le pagine…</p>
+        </div>
+      )}
       <main
         id="top"
         className={`${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`}

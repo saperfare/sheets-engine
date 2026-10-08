@@ -154,6 +154,25 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
     const cards = useStore();
     const [ready, setReady] = useState(false);
     const [docId, setDocId] = useState(loadDoc);
+    // Loading veil while a document opens: until fonts and the pictures of its pages have loaded (8 s at most)
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        setLoading(true);
+        let done = false;
+        const finish = () => { if (!done) {
+            done = true;
+            setLoading(false);
+        } };
+        const t = setTimeout(async () => {
+            const imgs = [...document.querySelectorAll('main img')].filter(i => !i.complete);
+            await Promise.race([
+                Promise.all([document.fonts.ready, ...imgs.map(i => new Promise(r => { i.onload = i.onerror = r; }))]),
+                new Promise(r => setTimeout(r, 8000)),
+            ]);
+            finish();
+        }, 50);
+        return () => clearTimeout(t);
+    }, [docId]);
     const doc = DOCS[docId];
     const SET = doc.settings ?? `settings:${docId}`;
     const PDF_NAME = doc.pdf;
@@ -448,13 +467,13 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
                                         next.splice(i, 0, next.splice(dragFrom, 1)[0]);
                                         setSettings({ order: next });
                                         setDragFrom(null);
-                                    }, onDragEnd: () => setDragFrom(null), children: _jsxs("button", { type: "button", onClick: () => { requestAnimationFrame(() => document.getElementById(`sheet-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }, children: [_jsx(Thumb, { id: id, w: doc.format.w, stamp: `${rev}-${dirty}-${order.join()}-${tab}-${docId}` }), _jsxs("span", { className: "sidebar-name", children: [_jsx("i", { children: i + 1 }), nameOf(id)] })] }) }, id))) }), sideOpen && EDITOR && (_jsxs("div", { className: "sidebar-foot", children: [_jsxs("button", { type: "button", className: "sidebar-settings", onClick: () => setShowSettings(true), children: [_jsx(IconSettings, { ...I }), "Impostazioni"] }), _jsx("button", { type: "button", className: tab === 'archive' ? 'icon-btn on' : 'icon-btn', title: tab === 'archive' ? 'Torna alle pagine' : `Archivio (${archived.length})`, "aria-label": "Archivio", "aria-pressed": tab === 'archive', onClick: () => setTab(t => (t === 'archive' ? 'pages' : 'archive')), children: _jsx(IconArchive, { ...I }) })] }))] })), doc.format !== LANDSCAPE && _jsx("style", { children: `@page { size: ${doc.format.page}; margin: 0; }` }), _jsx(FormatContext.Provider, { value: format, children: _jsxs("main", { id: "top", className: `${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`, style: (presenting ? { '--fit': scale } : { '--page-fit': fitPage }), onClick: presenting ? e => step(e.clientX > window.innerWidth / 2 ? 1 : -1) : undefined, children: [(tab === 'pages' || presenting) && order.map((id, i) => {
-                                    const [Page] = doc.sheets[id];
-                                    const title = nameOf(id);
-                                    return (_jsx("div", { id: `sheet-${id}`, className: 'page' + (i === slide ? ' current' : ''), children: _jsx(ScaleContext.Provider, { value: presenting ? 1 : fitPage, children: _jsx(PageContext.Provider, { value: { n: i + 1, of: order.length, title, onMove: d => move(id, d), canUp: i > 0, canDown: i < order.length - 1, onArchive: () => archive(id), layoutLocked: lockLayout.has(id), textLocked: lockText.has(id), onLockLayout: () => toggleLock(id, 'layout'), onLockText: () => toggleLock(id, 'text'), onRename: t => rename(id, t) }, children: _jsx(Page, {}) }) }) }, `${id}-${rev}-${docId}`));
-                                }), EDITOR && !presenting && tab === 'archive' && (_jsxs("section", { className: "archive", children: [_jsx("h2", { className: "archive-title", children: "Pagine archiviate" }), _jsx("p", { className: "archive-note", children: "Escluse dal PDF, dalla presentazione e dal sito." }), archived.length === 0 && _jsx("p", { className: "archive-note", children: "Nessuna pagina archiviata." }), archived.map(id => {
-                                            const [Page] = doc.sheets[id];
-                                            const title = nameOf(id);
-                                            return (_jsx("div", { id: `sheet-${id}`, className: "page", children: _jsx(ScaleContext.Provider, { value: fitPage, children: _jsx(PageContext.Provider, { value: { n: 0, of: order.length, title: `${title}, archiviata`, onRestore: () => restore(id), layoutLocked: lockLayout.has(id), textLocked: lockText.has(id) }, children: _jsx(Page, {}) }) }) }, `${id}-${rev}`));
-                                        })] }))] }) }), presenting && (_jsxs("div", { className: "present-bar", onClick: e => e.stopPropagation(), children: [_jsxs("span", { children: [(slide ?? 0) + 1, " / ", order.length] }), _jsxs("button", { type: "button", onClick: exit, children: [_jsx(IconX, { ...I }), "Esci"] })] })), toast && _jsx("div", { className: "toast", role: "status", children: toast })] }) }) }));
+                                    }, onDragEnd: () => setDragFrom(null), children: _jsxs("button", { type: "button", onClick: () => { requestAnimationFrame(() => document.getElementById(`sheet-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }, children: [_jsx(Thumb, { id: id, w: doc.format.w, stamp: `${rev}-${dirty}-${order.join()}-${tab}-${docId}` }), _jsxs("span", { className: "sidebar-name", children: [_jsx("i", { children: i + 1 }), nameOf(id)] })] }) }, id))) }), sideOpen && EDITOR && (_jsxs("div", { className: "sidebar-foot", children: [_jsxs("button", { type: "button", className: "sidebar-settings", onClick: () => setShowSettings(true), children: [_jsx(IconSettings, { ...I }), "Impostazioni"] }), _jsx("button", { type: "button", className: tab === 'archive' ? 'icon-btn on' : 'icon-btn', title: tab === 'archive' ? 'Torna alle pagine' : `Archivio (${archived.length})`, "aria-label": "Archivio", "aria-pressed": tab === 'archive', onClick: () => setTab(t => (t === 'archive' ? 'pages' : 'archive')), children: _jsx(IconArchive, { ...I }) })] }))] })), doc.format !== LANDSCAPE && _jsx("style", { children: `@page { size: ${doc.format.page}; margin: 0; }` }), _jsxs(FormatContext.Provider, { value: format, children: [loading && (_jsxs("div", { className: "page-loading", role: "status", "aria-live": "polite", children: [_jsx("span", { className: "page-loading-spin", "aria-hidden": "true" }), _jsx("p", { children: "Carico le pagine\u2026" })] })), _jsxs("main", { id: "top", className: `${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`, style: (presenting ? { '--fit': scale } : { '--page-fit': fitPage }), onClick: presenting ? e => step(e.clientX > window.innerWidth / 2 ? 1 : -1) : undefined, children: [(tab === 'pages' || presenting) && order.map((id, i) => {
+                                        const [Page] = doc.sheets[id];
+                                        const title = nameOf(id);
+                                        return (_jsx("div", { id: `sheet-${id}`, className: 'page' + (i === slide ? ' current' : ''), children: _jsx(ScaleContext.Provider, { value: presenting ? 1 : fitPage, children: _jsx(PageContext.Provider, { value: { n: i + 1, of: order.length, title, onMove: d => move(id, d), canUp: i > 0, canDown: i < order.length - 1, onArchive: () => archive(id), layoutLocked: lockLayout.has(id), textLocked: lockText.has(id), onLockLayout: () => toggleLock(id, 'layout'), onLockText: () => toggleLock(id, 'text'), onRename: t => rename(id, t) }, children: _jsx(Page, {}) }) }) }, `${id}-${rev}-${docId}`));
+                                    }), EDITOR && !presenting && tab === 'archive' && (_jsxs("section", { className: "archive", children: [_jsx("h2", { className: "archive-title", children: "Pagine archiviate" }), _jsx("p", { className: "archive-note", children: "Escluse dal PDF, dalla presentazione e dal sito." }), archived.length === 0 && _jsx("p", { className: "archive-note", children: "Nessuna pagina archiviata." }), archived.map(id => {
+                                                const [Page] = doc.sheets[id];
+                                                const title = nameOf(id);
+                                                return (_jsx("div", { id: `sheet-${id}`, className: "page", children: _jsx(ScaleContext.Provider, { value: fitPage, children: _jsx(PageContext.Provider, { value: { n: 0, of: order.length, title: `${title}, archiviata`, onRestore: () => restore(id), layoutLocked: lockLayout.has(id), textLocked: lockText.has(id) }, children: _jsx(Page, {}) }) }) }, `${id}-${rev}`));
+                                            })] }))] })] }), presenting && (_jsxs("div", { className: "present-bar", onClick: e => e.stopPropagation(), children: [_jsxs("span", { children: [(slide ?? 0) + 1, " / ", order.length] }), _jsxs("button", { type: "button", onClick: exit, children: [_jsx(IconX, { ...I }), "Esci"] })] })), toast && _jsx("div", { className: "toast", role: "status", children: toast })] }) }) }));
 }
