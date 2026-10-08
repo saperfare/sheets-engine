@@ -384,6 +384,39 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
     const settings = (cards.values[SET] ?? {});
     const order = (settings.order ?? doc.order ?? Object.keys(doc.sheets)).filter(id => id in doc.sheets);
     const archived = Object.keys(doc.sheets).filter(id => !order.includes(id));
+    // Click to zoom: in present mode and on the published site, a picture or a video opens full screen
+    const [zoom, setZoom] = useState(null);
+    useEffect(() => {
+        if (!zoom)
+            return;
+        const onKey = (e) => { if (e.key === 'Escape') {
+            e.stopPropagation();
+            setZoom(null);
+        } };
+        window.addEventListener('keydown', onKey, true);
+        return () => window.removeEventListener('keydown', onKey, true);
+    }, [zoom]);
+    const zoomFrom = (t) => {
+        if (t.closest('.video-bar, button, a, .sheet-foot'))
+            return false;
+        const media = t.closest('.sheet img, .sheet video');
+        const slot = !media && t.closest('.sheet .has-img .slot-empty');
+        if (media) {
+            const src = media instanceof HTMLVideoElement ? media.currentSrc || media.src : media.currentSrc || media.src;
+            if (!src || /logo|qr-|\.svg$/i.test(src))
+                return false;
+            setZoom({ src, video: media instanceof HTMLVideoElement });
+            return true;
+        }
+        if (slot) {
+            const m = getComputedStyle(slot).backgroundImage.match(/url\("?([^")]+)"?\)\s*$/) ?? getComputedStyle(slot).backgroundImage.match(/url\("?([^")]+)"?\)/);
+            if (m) {
+                setZoom({ src: m[1], video: false });
+                return true;
+            }
+        }
+        return false;
+    };
     const step = (d) => setSlide(s => Math.min(Math.max((s ?? 0) + d, 0), order.length - 1));
     useEffect(() => {
         if (slide === null)
@@ -467,7 +500,13 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
                                         next.splice(i, 0, next.splice(dragFrom, 1)[0]);
                                         setSettings({ order: next });
                                         setDragFrom(null);
-                                    }, onDragEnd: () => setDragFrom(null), children: _jsxs("button", { type: "button", onClick: () => { requestAnimationFrame(() => document.getElementById(`sheet-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }, children: [_jsx(Thumb, { id: id, w: doc.format.w, stamp: `${rev}-${dirty}-${order.join()}-${tab}-${docId}` }), _jsxs("span", { className: "sidebar-name", children: [_jsx("i", { children: i + 1 }), nameOf(id)] })] }) }, id))) }), sideOpen && EDITOR && (_jsxs("div", { className: "sidebar-foot", children: [_jsxs("button", { type: "button", className: "sidebar-settings", onClick: () => setShowSettings(true), children: [_jsx(IconSettings, { ...I }), "Impostazioni"] }), _jsx("button", { type: "button", className: tab === 'archive' ? 'icon-btn on' : 'icon-btn', title: tab === 'archive' ? 'Torna alle pagine' : `Archivio (${archived.length})`, "aria-label": "Archivio", "aria-pressed": tab === 'archive', onClick: () => setTab(t => (t === 'archive' ? 'pages' : 'archive')), children: _jsx(IconArchive, { ...I }) })] }))] })), doc.format !== LANDSCAPE && _jsx("style", { children: `@page { size: ${doc.format.page}; margin: 0; }` }), _jsxs(FormatContext.Provider, { value: format, children: [loading && (_jsxs("div", { className: "page-loading", role: "status", "aria-live": "polite", children: [_jsx("span", { className: "page-loading-spin", "aria-hidden": "true" }), _jsx("p", { children: "Carico le pagine\u2026" })] })), _jsxs("main", { id: "top", className: `${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`, style: (presenting ? { '--fit': scale } : { '--page-fit': fitPage }), onClick: presenting ? e => step(e.clientX > window.innerWidth / 2 ? 1 : -1) : undefined, children: [(tab === 'pages' || presenting) && order.map((id, i) => {
+                                    }, onDragEnd: () => setDragFrom(null), children: _jsxs("button", { type: "button", onClick: () => { requestAnimationFrame(() => document.getElementById(`sheet-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }, children: [_jsx(Thumb, { id: id, w: doc.format.w, stamp: `${rev}-${dirty}-${order.join()}-${tab}-${docId}` }), _jsxs("span", { className: "sidebar-name", children: [_jsx("i", { children: i + 1 }), nameOf(id)] })] }) }, id))) }), sideOpen && EDITOR && (_jsxs("div", { className: "sidebar-foot", children: [_jsxs("button", { type: "button", className: "sidebar-settings", onClick: () => setShowSettings(true), children: [_jsx(IconSettings, { ...I }), "Impostazioni"] }), _jsx("button", { type: "button", className: tab === 'archive' ? 'icon-btn on' : 'icon-btn', title: tab === 'archive' ? 'Torna alle pagine' : `Archivio (${archived.length})`, "aria-label": "Archivio", "aria-pressed": tab === 'archive', onClick: () => setTab(t => (t === 'archive' ? 'pages' : 'archive')), children: _jsx(IconArchive, { ...I }) })] }))] })), doc.format !== LANDSCAPE && _jsx("style", { children: `@page { size: ${doc.format.page}; margin: 0; }` }), _jsxs(FormatContext.Provider, { value: format, children: [loading && (_jsxs("div", { className: "page-loading", role: "status", "aria-live": "polite", children: [_jsx("span", { className: "page-loading-spin", "aria-hidden": "true" }), _jsx("p", { children: "Carico le pagine\u2026" })] })), zoom && (_jsxs("div", { className: "media-zoom", role: "dialog", "aria-label": "Immagine a schermo intero", onClick: () => setZoom(null), children: [zoom.video
+                                        ? _jsx("video", { src: zoom.src, autoPlay: true, loop: true, controls: true, playsInline: true, onClick: e => e.stopPropagation() })
+                                        : _jsx("img", { src: zoom.src, alt: "" }), _jsx("button", { type: "button", className: "media-zoom-close", "aria-label": "Chiudi", onClick: () => setZoom(null), children: _jsx(IconX, { ...I }) })] })), _jsxs("main", { id: "top", className: `${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`, style: (presenting ? { '--fit': scale } : { '--page-fit': fitPage }), onClick: presenting || !EDITOR
+                                    ? e => { if (zoomFrom(e.target))
+                                        return; if (presenting)
+                                        step(e.clientX > window.innerWidth / 2 ? 1 : -1); }
+                                    : undefined, children: [(tab === 'pages' || presenting) && order.map((id, i) => {
                                         const [Page] = doc.sheets[id];
                                         const title = nameOf(id);
                                         return (_jsx("div", { id: `sheet-${id}`, className: 'page' + (i === slide ? ' current' : ''), children: _jsx(ScaleContext.Provider, { value: presenting ? 1 : fitPage, children: _jsx(PageContext.Provider, { value: { n: i + 1, of: order.length, title, onMove: d => move(id, d), canUp: i > 0, canDown: i < order.length - 1, onArchive: () => archive(id), layoutLocked: lockLayout.has(id), textLocked: lockText.has(id), onLockLayout: () => toggleLock(id, 'layout'), onLockText: () => toggleLock(id, 'text'), onRename: t => rename(id, t) }, children: _jsx(Page, {}) }) }) }, `${id}-${rev}-${docId}`));

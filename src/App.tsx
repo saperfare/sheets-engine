@@ -378,6 +378,29 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   const settings = (cards.values[SET] ?? {}) as Settings
   const order = (settings.order ?? doc.order ?? Object.keys(doc.sheets)).filter(id => id in doc.sheets)
   const archived = Object.keys(doc.sheets).filter(id => !order.includes(id))
+  // Click to zoom: in present mode and on the published site, a picture or a video opens full screen
+  const [zoom, setZoom] = useState<{ src: string; video: boolean } | null>(null)
+  useEffect(() => {
+    if (!zoom) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); setZoom(null) } }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [zoom])
+  const zoomFrom = (t: HTMLElement): boolean => {
+    if (t.closest('.video-bar, button, a, .sheet-foot')) return false
+    const media = t.closest<HTMLImageElement | HTMLVideoElement>('.sheet img, .sheet video')
+    const slot = !media && t.closest<HTMLElement>('.sheet .has-img .slot-empty')
+    if (media) {
+      const src = media instanceof HTMLVideoElement ? media.currentSrc || media.src : media.currentSrc || media.src
+      if (!src || /logo|qr-|\.svg$/i.test(src)) return false
+      setZoom({ src, video: media instanceof HTMLVideoElement }); return true
+    }
+    if (slot) {
+      const m = getComputedStyle(slot).backgroundImage.match(/url\("?([^")]+)"?\)\s*$/) ?? getComputedStyle(slot).backgroundImage.match(/url\("?([^")]+)"?\)/)
+      if (m) { setZoom({ src: m[1], video: false }); return true }
+    }
+    return false
+  }
   const step = (d: number) => setSlide(s => Math.min(Math.max((s ?? 0) + d, 0), order.length - 1))
 
   useEffect(() => {
@@ -582,11 +605,21 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
           <p>Carico le pagine…</p>
         </div>
       )}
+      {zoom && (
+        <div className="media-zoom" role="dialog" aria-label="Immagine a schermo intero" onClick={() => setZoom(null)}>
+          {zoom.video
+            ? <video src={zoom.src} autoPlay loop controls playsInline onClick={e => e.stopPropagation()} />
+            : <img src={zoom.src} alt="" />}
+          <button type="button" className="media-zoom-close" aria-label="Chiudi" onClick={() => setZoom(null)}><IconX {...I} /></button>
+        </div>
+      )}
       <main
         id="top"
         className={`${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`}
         style={(presenting ? { '--fit': scale } : { '--page-fit': fitPage }) as unknown as CSSProperties}
-        onClick={presenting ? e => step(e.clientX > window.innerWidth / 2 ? 1 : -1) : undefined}
+        onClick={presenting || !EDITOR
+          ? e => { if (zoomFrom(e.target as HTMLElement)) return; if (presenting) step(e.clientX > window.innerWidth / 2 ? 1 : -1) }
+          : undefined}
       >
         {(tab === 'pages' || presenting) && order.map((id, i) => {
           const [Page] = doc.sheets[id]
