@@ -184,7 +184,8 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
     const onClick = (e: MouseEvent) => {
       const el = e.target as HTMLElement
       if (el.closest('.toolbar, .sidebar, .save-dock, .format-float, .modal-back, .sheet-tools, .card-bar, .settings')) return
-      const text = el.closest<HTMLElement>(`[data-card] :is(${TEXT})`)
+      // the footer line is a text too, shared by every page of the document
+      const text = el.closest<HTMLElement>(`[data-card] :is(${TEXT}), .sheet-foot-text`)
       if (text && mode === 'layout') {
         setMode('text')
         const { clientX: x, clientY: y } = e
