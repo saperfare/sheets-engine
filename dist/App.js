@@ -90,6 +90,8 @@ function Thumb({ id, stamp, w }) {
             copy.querySelectorAll('[contenteditable]').forEach(e => e.removeAttribute('contenteditable'));
             copy.querySelectorAll('.card-bar, .card-size, .react-resizable-handle').forEach(e => e.remove());
             copy.querySelectorAll('[data-card]').forEach(e => e.removeAttribute('data-card'));
+            // videos stay still on their poster: no autoplay, no loop in the sidebar
+            copy.querySelectorAll('video').forEach(v => { v.removeAttribute('autoplay'); v.autoplay = false; v.preload = 'none'; v.pause(); });
             // no duplicate ids: SVG gradients (chapter numbers) must resolve to the page, not to the hidden copy
             copy.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
             copy.style.zoom = String(THUMB_W / 1600); // the long side is always 1600px

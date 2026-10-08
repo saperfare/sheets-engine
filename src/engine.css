@@ -730,3 +730,5 @@ body { background: white; }
 .measure-box { position: absolute; outline: 1px dashed rgba(124, 58, 237, 0.55); outline-offset: -1px; }
 .measure-box.is-card { outline: 1.5px solid rgba(124, 58, 237, 0.8); }
 .dock .toolbar .icon-btn.on { background: var(--ui-accent); color: white; }
+/* sidebar thumbnails: nothing animates */
+.thumb, .thumb * { animation: none !important; transition: none !important; }
