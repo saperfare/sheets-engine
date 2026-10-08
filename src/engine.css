@@ -746,3 +746,9 @@ body { background: white; }
 .media-zoom-close:hover { background: rgba(255, 255, 255, 0.28); }
 @keyframes media-zoom-in { from { opacity: 0; transform: scale(0.98); } }
 .sheets.present { cursor: default; }
+/* pictures and videos grow a little under the mouse (click to zoom) */
+.sheet .cell :is(img, video) { transition: transform 0.35s ease; }
+.sheet .cell:hover :is(img, video):not([src*="logo"]):not([src*="qr-"]) { transform: scale(1.04); }
+.sheet .cell :is(img, video) { cursor: zoom-in; }
+[data-goto] { cursor: pointer; }
+[data-goto]:hover { opacity: 0.7; }

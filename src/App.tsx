@@ -617,10 +617,20 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
         id="top"
         className={`${presenting ? 'sheets present' : `sheets mode-${EDITOR ? mode : 'view'}`} tex-${texture}${ui.labels ? '' : ' ui-icons'}${ui.cardBar ? '' : ' ui-nobar'}${ui.cardSize ? '' : ' ui-nosize'}`}
         style={(presenting ? { '--fit': scale } : { '--page-fit': fitPage }) as unknown as CSSProperties}
-        // a click zooms a picture or a video (present mode and site); in the editor a double click does it.
         // Pages change only with the arrows or the buttons, never with a click.
-        onClick={presenting || !EDITOR ? e => { zoomFrom(e.target as HTMLElement) } : undefined}
-        onDoubleClick={EDITOR && !presenting ? e => { zoomFrom(e.target as HTMLElement) } : undefined}
+        onClick={e => {
+          const t = e.target as HTMLElement
+          // links inside the pages: an element with data-goto="<sheet id>" jumps to that page (the index)
+          const go = t.closest<HTMLElement>('[data-goto]')?.dataset.goto
+          if (go && (presenting || !EDITOR || mode !== 'text')) {
+            const i = order.indexOf(go)
+            if (i >= 0) { if (presenting) setSlide(i); else document.getElementById(`sheet-${go}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+            return
+          }
+          // a click zooms a picture or a video; in the editor not on empty slots (they open the gallery) nor while typing
+          if (EDITOR && !presenting && (mode === 'text' || t.closest('[data-slot]'))) return
+          zoomFrom(t)
+        }}
       >
         {(tab === 'pages' || presenting) && order.map((id, i) => {
           const [Page] = doc.sheets[id]
