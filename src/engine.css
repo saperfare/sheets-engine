@@ -454,7 +454,7 @@ body { background: white; }
 .thumb { width: 176px; height: 124.5px; overflow: hidden; border-radius: 0.4rem; background: white; box-shadow: 0 1px 4px color-mix(in srgb, var(--ui-shadow) 15%, transparent); pointer-events: none; }
 .thumb .sheet { border-radius: 0; }
 .sidebar-name { display: flex; gap: 0.4rem; font: 500 0.75rem var(--ui-font); color: var(--ui-strong); }
-.sidebar-name i { font-style: normal; color: var(--ui-accent-dk); }
+.sidebar-name i { font-style: normal; color: #8A8A93; }
 .sheets:not(.present) { padding-left: 216px; }
 /* Scale with transform (the grid knows how to drag inside a scaled box); the page box shrinks to match */
 .sheets:not(.present) .page { width: calc(1600px * var(--page-fit, 1)); display: flex; justify-content: center; }
