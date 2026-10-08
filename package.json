@@ -1,6 +1,6 @@
 {
   "name": "@saperfare/sheets-engine",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "White-label editor and presenter for A4 and 16:9 sheets: grid cards, inline text, gallery, video, locks, PDF via headless Edge.",
   "type": "module",
   "license": "UNLICENSED",
