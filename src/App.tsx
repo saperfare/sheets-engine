@@ -388,7 +388,11 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
   }, [zoom])
   const zoomFrom = (t: HTMLElement): boolean => {
     if (t.closest('.video-bar, button, a, .sheet-foot')) return false
-    const media = t.closest<HTMLImageElement | HTMLVideoElement>('.sheet img, .sheet video')
+    // pictures often ignore the pointer (pointer-events: none), so a click on their card counts too when the card holds one picture or video
+    const own = t.closest<HTMLImageElement | HTMLVideoElement>('.sheet img, .sheet video')
+    const card = !own ? t.closest<HTMLElement>('.sheet .cell') : null
+    const inCard = card ? [...card.querySelectorAll<HTMLImageElement | HTMLVideoElement>('img, video')].filter(m => !/logo|qr-|\.svg/i.test(m.currentSrc || m.src)) : []
+    const media = own ?? (inCard.length === 1 && !t.closest('h1, h2, h3, p, li, dt, dd, .chip') ? inCard[0] : null)
     const slot = !media && t.closest<HTMLElement>('.sheet .has-img .slot-empty')
     if (media) {
       const src = media instanceof HTMLVideoElement ? media.currentSrc || media.src : media.currentSrc || media.src
