@@ -715,7 +715,7 @@ body { background: white; }
 .cell-online img { margin-bottom: 5px; }
 .cell-step .tool-caption { padding-top: 0.45rem !important; }
 
-/* Spacing overlay (toolbar ruler): margins blue, gaps green, paddings orange, value in px */
+/* Spacing overlay (toolbar ruler): margins blue, gaps green, paddings orange, inner gaps pink, value in px */
 .measure-layer { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
 .measure-band { position: absolute; display: flex; align-items: center; justify-content: center; overflow: visible; }
 .measure-band span { padding: 0 0.3rem; border-radius: 0.25rem; font: 600 11px/1.5 ui-monospace, monospace; color: white; white-space: nowrap; }
@@ -725,4 +725,8 @@ body { background: white; }
 .measure-gap span { background: #16A34A; }
 .measure-pad { background: rgba(234, 88, 12, 0.18); }
 .measure-pad span { background: #EA580C; }
+.measure-inner { background: rgba(219, 39, 119, 0.22); }
+.measure-inner span { background: #DB2777; }
+.measure-box { position: absolute; outline: 1px dashed rgba(124, 58, 237, 0.55); outline-offset: -1px; }
+.measure-box.is-card { outline: 1.5px solid rgba(124, 58, 237, 0.8); }
 .dock .toolbar .icon-btn.on { background: var(--ui-accent); color: white; }
