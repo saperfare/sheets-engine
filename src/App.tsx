@@ -108,7 +108,8 @@ function Thumb({ id, stamp, w }: { id: string; stamp: string; w: number }) {
 }
 
 // Document picker: the current document as a button, the list with picture, format and pages in a popover
-function DocPicker({ docs, ids, current, onPick }: { docs: Record<string, DocConfig>; ids: string[]; current: string; onPick: (d: string) => void }) {
+// count: pages in use per document (archived pages excluded)
+function DocPicker({ docs, ids, current, onPick, count }: { docs: Record<string, DocConfig>; ids: string[]; current: string; onPick: (d: string) => void; count: (d: string) => number }) {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -122,7 +123,7 @@ function DocPicker({ docs, ids, current, onPick }: { docs: Record<string, DocCon
   const row = (d: string) => (
     <>
       {docs[d].picker && <img src={docs[d].picker![0]} alt="" />}
-      <span><b>{docs[d].label}</b><small>{docs[d].picker ? `${docs[d].picker![1]}, ` : ''}{Object.keys(docs[d].sheets).length} pagine</small></span>
+      <span><b>{docs[d].label}</b><small>{docs[d].picker ? `${docs[d].picker![1]}, ` : ''}{count(d)} pagine</small></span>
     </>
   )
   return (
@@ -563,7 +564,7 @@ export function PresentationApp({ config, theme, data: initial, themeErrors = []
             </button>
           </div>
           {sideOpen && EDITOR && (
-            <DocPicker docs={DOCS} ids={config.pickerOrder ?? ids} current={docId} onPick={switchDoc} />
+            <DocPicker docs={DOCS} ids={config.pickerOrder ?? ids} current={docId} onPick={switchDoc} count={d => { const o = (cards.ref.current[DOCS[d].settings ?? `settings:${d}`] as { order?: string[] } | undefined)?.order ?? DOCS[d].order ?? Object.keys(DOCS[d].sheets); return o.filter(id => id in DOCS[d].sheets).length }} />
           )}
           {sideOpen && EDITOR && tab === 'archive' && <p className="sidebar-label">Archivio ({archived.length})</p>}
           {sideOpen && <ol className="sidebar-list">
